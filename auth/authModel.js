@@ -9,7 +9,7 @@ function add(user){
     return db('users').insert(user);
 }
 
-function findBy(param){
-    return db('users').where({param});
+function findBy(username){
+    return db('users').where({username});
 }
 

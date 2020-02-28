@@ -1,10 +1,12 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const Users = require('./authModel');
+const {jwtSecret} = require('./secrets');
+const jwt = require('jsonwebtoken')
 
 router.post('/register', (req, res) => {
   let newUser = req.body;
-  const hash = brcypt.hashSync(newUser.password, 12);
+  const hash = bcrypt.hashSync(newUser.password, 12);
   newUser.password = hash;
   Users.add(newUser)
     .then(user=>res.status(201).json(user))
@@ -16,7 +18,7 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
   let {username, password} = req.body;
-  User.findBy(username).first()
+  Users.findBy(username).first()
     .then(user=>{
       if (user && bcrypt.compareSync(password, user.password)){
         const token = generateToken(user);
@@ -32,3 +34,15 @@ router.post('/login', (req, res) => {
 });
 
 module.exports = router;
+
+
+const generateToken = (user) => {
+  const payload = {
+    subject: user.id,
+    username: user.username
+  }
+  const options = {
+    expiresIn: '1h'
+  }
+  return jwt.sign(payload, jwtSecret, options)
+}
